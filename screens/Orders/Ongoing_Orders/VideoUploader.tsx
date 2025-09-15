@@ -100,7 +100,7 @@ export default function VideoUploader({
     return (
         <>
             <View style={styles.container}>
-                {estimatedBillStatus === 'Accepted' || userDetail === true ? (
+                {estimatedBillStatus === 'Accepted' || beforeWorkVideo?.url ? (
                     <TouchableOpacity
                         style={styles.uploadButton}
                         onPress={() => navigation.navigate('record-video', {

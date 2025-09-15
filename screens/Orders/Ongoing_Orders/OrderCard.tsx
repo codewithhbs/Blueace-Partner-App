@@ -37,40 +37,57 @@ export default function OrderCard({ order, onShowPreview, onRefresh }: OrderCard
 
     return (
         <View style={styles.container}>
-            <Text style={styles.title}>
-                # Order: {order._id.substring(0, 5)}...
-            </Text>
-            <Text style={styles.detail}>
-                Service: {order.serviceId?.name}
-            </Text> 
-            <Text style={styles.detail}>
-                Address: {order.address}
-            </Text>
-            <Text style={styles.detail}>
-                Date and Time: {order.workingDay} {order.workingTime}
-            </Text>
-            
-            <TouchableOpacity 
-                style={styles.mapButton}
-                onPress={openGoogleMaps}
-            >
-                <Text style={styles.mapButtonText}>Show on Google Maps</Text>
-            </TouchableOpacity>
+    <Text style={styles.title}>
+        # Order: {order._id.substring(0, 5)}...
+    </Text>
+    <Text style={styles.detail}>
+        Service: {order.serviceId?.name || order.serviceType}
+    </Text>
+    <Text style={styles.detail}>
+        Address: {order.address}
+    </Text>
+    <Text style={styles.detail}>
+        Date and Time: {order.workingDay || order.workingDateUserWant} {order.workingTime}
+    </Text>
+    <Text style={styles.detail}>
+        User Name: {order?.fullName}
+    </Text>
+    <Text style={styles.detail}>
+        Contact Number: {order.phoneNumber || order.userId?.ContactNumber}
+    </Text>
+    <Text style={styles.detail}>
+        User Type: {order.userId?.UserType} {order.userId?.isAMCUser ? "(AMC User)" : "(Non-AMC User)"}
+    </Text>
+    {order.message && (
+        <Text style={styles.detail}>
+            Message: {order.message}
+        </Text>
+    )}
+    <Text style={styles.detail}>
+        Inverter AC: {order.isInvetorAc ? "Yes" : "No"}
+    </Text>
 
-            <ActionButtons
-                order={order}
-                navigation={navigation}
-                onShowPreview={onShowPreview}
-                onRefresh={onRefresh}
-            />
-            <VideoUploader
-                orderId={order._id}
-                beforeWorkVideo={order?.beforeWorkVideo}
-                afterWorkVideo={order?.afterWorkVideo}
-                userDetail={order?.userId?.isAMCUser}
-                estimatedBillStatus={order.EstimatedBill?.BillStatus}
-            />
-        </View>
+    <TouchableOpacity 
+        style={styles.mapButton}
+        onPress={openGoogleMaps}
+    >
+        <Text style={styles.mapButtonText}>Show on Google Maps</Text>
+    </TouchableOpacity>
+
+    <ActionButtons
+        order={order}
+        navigation={navigation}
+        onShowPreview={onShowPreview}
+        onRefresh={onRefresh}
+    />
+    <VideoUploader
+        orderId={order._id}
+        beforeWorkVideo={order?.beforeWorkVideo}
+        afterWorkVideo={order?.afterWorkVideo}
+        userDetail={order?.userId?.isAMCUser}
+        estimatedBillStatus={order.EstimatedBill?.BillStatus}
+    />
+</View>
     );
 }
 

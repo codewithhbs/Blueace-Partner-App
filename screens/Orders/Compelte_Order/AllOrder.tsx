@@ -171,7 +171,12 @@ export default function AllOrder() {
                     onPress={() => setExpandedOrder(isExpanded ? null : order._id)}
                 >
                     <View style={styles.orderMain}>
-                        <Text style={styles.orderName}>{order.fullName}</Text>
+                        <View style={styles.userDetail}>
+                            <Text style={styles.orderName}>User Name: {order?.fullName}</Text>
+                            <Text>Contact Number: {order.phoneNumber || order.userId?.ContactNumber}</Text>
+                            {/* <Text>User Type: {order.userId?.UserType} {order.userId?.isAMCUser ? "(AMC User)" : "(Non-AMC User)"}</Text> */}
+                            {/* <Text>Inverter AC: {order.isInvetorAc ? "Yes" : "No"}</Text> */}
+                        </View>
                         <View style={[styles.statusBadge, { backgroundColor: `${statusColor}15` }]}>
                             <Text style={[styles.statusText, { color: statusColor }]}>
                                 {order.OrderStatus}
@@ -490,6 +495,9 @@ const styles = StyleSheet.create({
         justifyContent: 'space-between',
         alignItems: 'center',
         marginBottom: 8,
+    },
+    userDetail: {
+
     },
     orderName: {
         fontSize: 16,
