@@ -13,18 +13,15 @@ import {
 } from "react-native";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { useNavigation, useRoute } from "@react-navigation/native";
-import * as MediaLibrary from "expo-media-library";
 import { Video } from "expo-av";
 import axios from "axios";
 
 export default function VideoRecorder() {
-    // Route params
     const route = useRoute();
     const { type, orderId } = route.params || {};
 
-    // Permission states
+    // Permissions
     const [cameraPermission, setCameraPermission] = useState();
-    const [mediaLibraryPermission, setMediaLibraryPermission] = useState();
     const [micPermission, setMicPermission] = useState();
     const [permissionError, setPermissionError] = useState("");
 
@@ -55,20 +52,15 @@ export default function VideoRecorder() {
         (async () => {
             try {
                 const cameraPermission = await Camera.requestCameraPermissionsAsync();
-                const mediaLibraryPermission = await MediaLibrary.requestPermissionsAsync();
                 const microphonePermission = await Camera.requestMicrophonePermissionsAsync();
 
                 setCameraPermission(cameraPermission.status === "granted");
-                setMediaLibraryPermission(mediaLibraryPermission.status === "granted");
                 setMicPermission(microphonePermission.status === "granted");
 
-                // Set specific error messages for permissions
                 if (cameraPermission.status !== "granted") {
                     setPermissionError("Camera permission is required to record video.");
                 } else if (microphonePermission.status !== "granted") {
                     setPermissionError("Microphone permission is required for video recording.");
-                } else if (mediaLibraryPermission.status !== "granted") {
-                    setPermissionError("Media library permission is required to save videos.");
                 }
             } catch (error) {
                 console.error("Error requesting permissions:", error);
@@ -77,21 +69,15 @@ export default function VideoRecorder() {
         })();
     }, []);
 
-    // Clean up timer when component unmounts
+    // Cleanup timer
     useEffect(() => {
         return () => {
-            if (timerInterval) {
-                clearInterval(timerInterval);
-            }
+            if (timerInterval) clearInterval(timerInterval);
         };
     }, [timerInterval]);
 
-    // Permission loading screen
-    if (
-        cameraPermission === undefined ||
-        mediaLibraryPermission === undefined ||
-        micPermission === undefined
-    ) {
+    // Loading state
+    if (cameraPermission === undefined || micPermission === undefined) {
         return (
             <View style={styles.permissionContainer}>
                 <ActivityIndicator size="large" color="#0000ff" />
@@ -100,7 +86,7 @@ export default function VideoRecorder() {
         );
     }
 
-    // Permission error screen
+    // Permission error
     if (!cameraPermission || !micPermission) {
         return (
             <View style={styles.permissionContainer}>
@@ -117,14 +103,14 @@ export default function VideoRecorder() {
     }
 
     // Toggle camera facing
-    function toggleCameraFacing() {
+    const toggleCameraFacing = () => {
         setFacing((current) => (current === "back" ? "front" : "back"));
-    }
+    };
 
     // Toggle flash
-    function toggleFlash() {
+    const toggleFlash = () => {
         setFlashMode((current) => (current === "on" ? "off" : "on"));
-    }
+    };
 
     // Format seconds to MM:SS
     const formatTime = (seconds) => {
@@ -139,7 +125,6 @@ export default function VideoRecorder() {
             setRecording(true);
             setRecordingTime(0);
 
-            // Start timer
             const interval = setInterval(() => {
                 setRecordingTime(prev => prev + 1);
             }, 1000);
@@ -154,34 +139,20 @@ export default function VideoRecorder() {
                     setVideo(newVideo);
                     setRecording(false);
                     setShowVideoPreview(true);
-
-                    // Clear timer
                     clearInterval(interval);
                     setTimerInterval(null);
                 })
                 .catch(error => {
                     console.error("Error recording video:", error);
-                    Alert.alert(
-                        "Recording Error",
-                        "Failed to record video. Please try again.",
-                        [{ text: "OK" }]
-                    );
-
-                    // Clear timer
+                    Alert.alert("Recording Error", "Failed to record video. Please try again.");
                     clearInterval(interval);
                     setTimerInterval(null);
                     setRecording(false);
                 });
         } catch (error) {
             console.error("Error starting video recording:", error);
-            Alert.alert(
-                "Error",
-                "Failed to start video recording. Please try again.",
-                [{ text: "OK" }]
-            );
+            Alert.alert("Error", "Failed to start video recording. Please try again.");
             setRecording(false);
-
-            // Clear timer if it was started
             if (timerInterval) {
                 clearInterval(timerInterval);
                 setTimerInterval(null);
@@ -194,26 +165,21 @@ export default function VideoRecorder() {
         try {
             setRecording(false);
             cameraRef.current.stopRecording();
-
-            // Clear timer
             if (timerInterval) {
                 clearInterval(timerInterval);
                 setTimerInterval(null);
             }
         } catch (error) {
             console.error("Error stopping recording:", error);
-            Alert.alert(
-                "Error",
-                "Failed to stop recording. Please try again.",
-                [{ text: "OK" }]
-            );
+            Alert.alert("Error", "Failed to stop recording. Please try again.");
         }
     }
 
-    // Upload video to server
+    // Upload video
     const handleUpload = async (uri) => {
-        if (isUploading) return; 
-        console.log("type",type)
+        if (isUploading) return;
+        console.log("type", type);
+
         const formData = new FormData();
         const fileName = `${type}_work_video_${orderId?.substring(0, 5) || 'video'}.mp4`;
 
@@ -243,20 +209,14 @@ export default function VideoRecorder() {
             setFileLink(data.fileLink || '');
             setUploadSuccess(true);
 
-            // Show success message for 2 seconds before closing
             setTimeout(() => {
                 setIsUploading(false);
                 navigation.goBack();
             }, 2000);
-
         } catch (error) {
             console.error('Upload failed:', error?.response?.data || error.message);
             setIsUploading(false);
-            Alert.alert(
-                "Upload Failed",
-                "Failed to upload video. Please try again.",
-                [{ text: "OK" }]
-            );
+            Alert.alert("Upload Failed", "Failed to upload video. Please try again.");
         }
     };
 
@@ -332,33 +292,6 @@ export default function VideoRecorder() {
                             </View>
                         ) : (
                             <View style={styles.actionButtonsContainer}>
-                                {mediaLibraryPermission && (
-                                    <TouchableOpacity
-                                        style={styles.videoActionButton}
-                                        onPress={() => {
-                                            MediaLibrary.saveToLibraryAsync(video.uri)
-                                                .then(() => {
-                                                    Alert.alert(
-                                                        "Success",
-                                                        "Video saved to gallery",
-                                                        [{ text: "OK" }]
-                                                    );
-                                                })
-                                                .catch(error => {
-                                                    console.error("Error saving video:", error);
-                                                    Alert.alert(
-                                                        "Error",
-                                                        "Failed to save video to gallery",
-                                                        [{ text: "OK" }]
-                                                    );
-                                                });
-                                        }}
-                                    >
-                                        <Ionicons name="save" size={24} color="#fff" />
-                                        <Text style={styles.videoActionText}>Save</Text>
-                                    </TouchableOpacity>
-                                )}
-
                                 <TouchableOpacity
                                     style={styles.videoActionButton}
                                     onPress={() => handleUpload(video.uri)}
@@ -394,29 +327,18 @@ export default function VideoRecorder() {
                 flash={flashMode}
                 mode="video"
             >
-                {/* Recording Timer */}
                 {recording && (
                     <View style={styles.recordingIndicator}>
                         <View style={styles.recordingDot} />
-                        <Text style={styles.recordingTimer}>
-                            {formatTime(recordingTime)}
-                        </Text>
+                        <Text style={styles.recordingTimer}>{formatTime(recordingTime)}</Text>
                     </View>
                 )}
 
-                {/* Camera Controls */}
                 <View style={styles.controlsContainer}>
-                    <TouchableOpacity
-                        style={styles.controlButton}
-                        onPress={toggleCameraFacing}
-                    >
+                    <TouchableOpacity style={styles.controlButton} onPress={toggleCameraFacing}>
                         <Ionicons name="camera-reverse" size={24} color="white" />
                     </TouchableOpacity>
-
-                    <TouchableOpacity
-                        style={styles.controlButton}
-                        onPress={toggleFlash}
-                    >
+                    <TouchableOpacity style={styles.controlButton} onPress={toggleFlash}>
                         <Ionicons
                             name={flashMode === "on" ? "flash" : "flash-off"}
                             size={24}
@@ -425,26 +347,18 @@ export default function VideoRecorder() {
                     </TouchableOpacity>
                 </View>
 
-                {/* Record Button */}
                 <View style={styles.recordButtonContainer}>
                     {recording ? (
-                        <TouchableOpacity
-                            style={styles.stopButton}
-                            onPress={stopRecording}
-                        >
+                        <TouchableOpacity style={styles.stopButton} onPress={stopRecording}>
                             <View style={styles.stopIcon} />
                         </TouchableOpacity>
                     ) : (
-                        <TouchableOpacity
-                            style={styles.recordButton}
-                            onPress={startRecording}
-                        >
+                        <TouchableOpacity style={styles.recordButton} onPress={startRecording}>
                             <View style={styles.recordIcon} />
                         </TouchableOpacity>
                     )}
                 </View>
 
-                {/* Instructions */}
                 {!recording && (
                     <View style={styles.instructionsContainer}>
                         <Text style={styles.instructionsText}>
@@ -453,7 +367,6 @@ export default function VideoRecorder() {
                     </View>
                 )}
 
-                {/* Close Button */}
                 <TouchableOpacity
                     style={styles.closeButtonCamera}
                     onPress={() => navigation.goBack()}
@@ -462,20 +375,14 @@ export default function VideoRecorder() {
                 </TouchableOpacity>
             </CameraView>
 
-            {/* Video Preview Modal */}
             <VideoPreviewModal />
         </View>
     );
 }
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: '#000',
-    },
-    camera: {
-        flex: 1,
-    },
+    container: { flex: 1, backgroundColor: '#000' },
+    camera: { flex: 1 },
     controlsContainer: {
         position: 'absolute',
         top: Platform.OS === 'ios' ? 50 : 30,
@@ -577,10 +484,7 @@ const styles = StyleSheet.create({
         paddingVertical: 8,
         borderRadius: 20,
     },
-    videoPreviewContainer: {
-        flex: 1,
-        backgroundColor: '#000',
-    },
+    videoPreviewContainer: { flex: 1, backgroundColor: '#000' },
     videoPreviewHeader: {
         flexDirection: 'row',
         alignItems: 'center',
@@ -601,45 +505,22 @@ const styles = StyleSheet.create({
         left: 16,
         zIndex: 1,
     },
-    videoPreview: {
-        flex: 1,
-        backgroundColor: '#000',
-    },
-    videoPreviewActions: {
-        padding: 20,
-        backgroundColor: 'rgba(0, 0, 0, 0.8)',
-    },
+    videoPreview: { flex: 1, backgroundColor: '#000' },
+    videoPreviewActions: { padding: 20, backgroundColor: 'rgba(0, 0, 0, 0.8)' },
     actionButtonsContainer: {
         flexDirection: 'row',
         justifyContent: 'space-around',
     },
-    videoActionButton: {
-        alignItems: 'center',
-        justifyContent: 'center',
-        padding: 10,
-    },
-    videoActionText: {
-        color: '#fff',
-        marginTop: 8,
-        fontSize: 14,
-    },
-    uploadProgressContainer: {
-        width: '100%',
-        alignItems: 'center',
-        padding: 10,
-    },
+    videoActionButton: { alignItems: 'center', justifyContent: 'center', padding: 10 },
+    videoActionText: { color: '#fff', marginTop: 8, fontSize: 14 },
+    uploadProgressContainer: { width: '100%', alignItems: 'center', padding: 10 },
     uploadProgressText: {
         color: '#fff',
         fontSize: 18,
         fontWeight: 'bold',
         marginBottom: 15,
     },
-    uploadHint: {
-        color: '#ccc',
-        fontSize: 14,
-        marginTop: 15,
-        textAlign: 'center',
-    },
+    uploadHint: { color: '#ccc', fontSize: 14, marginTop: 15, textAlign: 'center' },
     progressBarContainer: {
         width: '100%',
         height: 12,
@@ -647,25 +528,10 @@ const styles = StyleSheet.create({
         borderRadius: 6,
         overflow: 'hidden',
     },
-    progressBar: {
-        height: '100%',
-        backgroundColor: '#4CAF50',
-    },
-    successContainer: {
-        alignItems: 'center',
-        padding: 20,
-    },
-    successText: {
-        color: '#fff',
-        fontSize: 22,
-        fontWeight: 'bold',
-        marginTop: 15,
-    },
-    successSubtext: {
-        color: '#ccc',
-        fontSize: 14,
-        marginTop: 10,
-    },
+    progressBar: { height: '100%', backgroundColor: '#4CAF50' },
+    successContainer: { alignItems: 'center', padding: 20 },
+    successText: { color: '#fff', fontSize: 22, fontWeight: 'bold', marginTop: 15 },
+    successSubtext: { color: '#ccc', fontSize: 14, marginTop: 10 },
     permissionContainer: {
         flex: 1,
         justifyContent: 'center',
@@ -673,12 +539,7 @@ const styles = StyleSheet.create({
         padding: 20,
         backgroundColor: '#000',
     },
-    permissionText: {
-        fontSize: 16,
-        color: '#fff',
-        marginTop: 16,
-        textAlign: 'center',
-    },
+    permissionText: { fontSize: 16, color: '#fff', marginTop: 16, textAlign: 'center' },
     permissionErrorText: {
         fontSize: 16,
         color: '#fff',
@@ -693,9 +554,5 @@ const styles = StyleSheet.create({
         paddingHorizontal: 24,
         borderRadius: 8,
     },
-    permissionButtonText: {
-        color: '#fff',
-        fontSize: 16,
-        fontWeight: 'bold',
-    },
+    permissionButtonText: { color: '#fff', fontSize: 16, fontWeight: 'bold' },
 });

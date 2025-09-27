@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { View, TouchableOpacity, Text, StyleSheet } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
-import { Video } from 'expo-av';
 import axios from 'axios';
 import { CircleX, Upload } from 'lucide-react-native';
 import { colors } from '~/colors/Colors';
