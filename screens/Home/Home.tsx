@@ -11,11 +11,11 @@ export default function Home() {
 
     useEffect(() => {
         const fnc = async () => {
-            console.log("i am hit")
+            // console.log("i am hit")
             setLoading(true);
             try {
                 const order = await FetchNewOrder();
-                console.log("order",order)
+                // console.log("order",order)
                 if (order && order.length > 0) {
                     setOrder(order);
                 } else {

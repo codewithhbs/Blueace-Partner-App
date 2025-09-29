@@ -7,11 +7,11 @@ import { FetchUserDetails } from "~/utils/api/Api";
 import { colors } from "~/colors/Colors";
 import Password_Change from "./Password_Change/Password_Change";
 import { useNavigation } from "@react-navigation/native";
-import { clearStroge } from "~/utils/Service/SecureStore";
+// import { clearStroge } from "~/utils/Service/SecureStore";
 
 
 
-export default function Profile() {
+export default function Profile({handleLogout}) {
     const [user, setUser] = useState({})
     const [refreshing, setRefreshing] = useState(false);
     const [modelShow, setModelShow] = useState(false)
@@ -30,10 +30,10 @@ export default function Profile() {
         fetchDetails()
     }, [])
 
-    const handleLogout = async() => {
-        await clearStroge()
-        console.log("Logging out...");
-    };
+    // const handleLogout = async() => {
+    //     await clearStroge()
+    //     console.log("Logging out...");
+    // };
 
     const handleChangePassword = () => {
         setModelShow(true)

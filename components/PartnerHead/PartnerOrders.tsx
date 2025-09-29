@@ -63,9 +63,9 @@ export default function PartnerOrders({ reload }: PartnerOrdersProps) {
                 GetDataOfVendor().catch(() => ({}))
             ]);
 
-            console.log(
-                `orders: ${Array.isArray(orders) ? orders.length : 0}, members: ${members.length}, vendorData: ${vendorData?.data?.totalOrders || 0}`
-            );
+            // console.log(
+            //     `orders: ${Array.isArray(orders) ? orders.length : 0}, members: ${members.length}, vendorData: ${vendorData?.data?.totalOrders || 0}`
+            // );
 
             setOrdersData(Array.isArray(orders) ? orders : []);
             setMembersData(Array.isArray(members) ? members : []);

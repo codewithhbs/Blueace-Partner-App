@@ -122,7 +122,7 @@ export const fetchMemeber = async () => {
     const data = await axios.get(
       `${ENDPOINT_URL}/get-vendor-member/${user._id}`
     );
-    console.log("User data", data.data.data);
+    // console.log("User data", data.data.data);
     return data.data.data;
   } catch (error: any) {
     console.error("Error Getting Member work status:", error?.response?.data);
@@ -179,7 +179,7 @@ export const GetDataOfVendor = async (stauts: string): Promise<void> => {
     const response = await axios.get(
       `${TICKET}/get-Data-Of-Vendor?vendorId=${user._id}&stauts=${stauts}`
     );
-    console.log("data", response.data)
+    // console.log("data", response.data)
     return response.data;
   } catch (error: any) {
     console.error("Error Allotting Member:", error?.response?.data);

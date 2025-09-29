@@ -10,7 +10,7 @@ export default function Partner_Slots({ reload }) {
   const fetchStatus = async () => {
     try {
       const userDetails = await FetchUserDetails();
-      console.log(userDetails?.workingHour?.schedule)
+      // console.log(userDetails?.workingHour?.schedule)
       setUserData(userDetails?.workingHour?.schedule || []);
     } catch (error) {
       console.error('Error fetching status:', error);
