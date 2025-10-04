@@ -37,6 +37,7 @@
     "expo-notifications": "~0.29.14",
     "expo-secure-store": "~14.0.1",
     "expo-status-bar": "~2.0.0",
+    "expo-task-manager": "^14.0.7",
     "expo-updates": "~0.27.4",
     "firebase": "^11.3.1",
     "lightningcss": "^1.29.1",

@@ -1,23 +1,43 @@
-import { io } from 'socket.io-client';
+// utils/Socket/SocketInit.ts
+import { io } from "socket.io-client";
 
-// ⚠️ Replace with your backend LAN IP and port
-export const socket = io("http://192.168.1.8:7987", {
+export const socket = io("https://api.blueaceindia.com", {
   transports: ["websocket"],
-  autoConnect: false, // don't connect immediately
+  autoConnect: false,
 });
 
-export const connectSocket = () => {
+export const connectSocket = (vendorId: string) => {
   if (!socket.connected) {
     socket.connect();
 
-    socket.on('connect', () => console.log('✅ Socket connected!', socket.id));
-    socket.on('connect_error', (err) => console.error('❌ Socket connection error:', err.message));
-    socket.on('disconnect', (reason) => console.log('⚠️ Socket disconnected:', reason));
+    // ✅ Clear old listeners before attaching new ones
+    socket.removeAllListeners("connect");
+    socket.removeAllListeners("connect_error");
+    socket.removeAllListeners("disconnect");
+
+    socket.on("connect", () => {
+      console.log("Socket connected", socket.id);
+      socket.emit("vendor:identify", { vendorId });
+    });
+
+    socket.on("connect_error", (err) =>
+      console.error("Connect error", err.message)
+    );
+
+    socket.on("disconnect", (reason) =>
+      console.log("Socket disconnected", reason)
+    );
+  } else {
+    // ensure identified if reconnect happened
+    socket.emit("vendor:identify", { vendorId });
   }
 };
 
-export const disconnectSocket = () => {
+export const disconnectSocket = async (vendorId?: string, lastLocation?: any) => {
   if (socket.connected) {
+    if (vendorId && lastLocation) {
+      socket.emit("vendor:go:offline", { vendorId, lastLocation });
+    }
     socket.disconnect();
   }
 };
